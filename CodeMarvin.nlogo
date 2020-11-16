@@ -17,6 +17,7 @@ turtles-own [
 
 to setup
   clear-all
+  stop-inspecting-dead-agents
   set-default-shape turtles "person"
   set i 0 ;; initialisation du compteur
   create-turtles population
@@ -41,6 +42,10 @@ to setup
   ;;setup-patches
   set opinion-globale opinion-somme / population ;; calcul de l'opinion global
   set i 0 ;; reset du compteur pour d'autres utilisation dans le reste du code
+  watch one-of turtles with [ not hidden? ]
+    clear-drawing
+    ask subject [ pen-down ]
+    inspect subject
   reset-ticks
 end
 
