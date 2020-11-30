@@ -45,7 +45,7 @@ to setup
     ifelse i < ruraux/urbains [set rural? true] [set rural? false] ;; divise la population en ruraux et urbains
     set i i + 1 ;; tour de compteur
     ifelse vieux? [set maleabilite random 31] [set maleabilite random 71] ;;définie la maléabilité de chaque tortue entre 0 et 30 pour les vieux ou entre 0 et 70 pour les jeunes
-    ifelse cadre? [set maleabilite maleabilite - 10] [set maleabilite maleabilite + 10] ;; coeff de maleabilite en fct de si une personne est cadre ou non
+    ifelse cadre? [ifelse maleabilite > 10 [set maleabilite maleabilite - 10] [set maleabilite 0]] [set maleabilite maleabilite + 10] ;; coeff de maleabilite en fct de si une personne est cadre ou non
   ]
   ;;setup-patches
   set opinion-globale opinion-somme / population ;; calcul de l'opinion global
@@ -144,7 +144,7 @@ to convaincre-moi
         if opinion-autre < opinion [set opinion opinion - 5]
         set opinion [opinion] of one-of turtles in-radius 1
       ]
-    set maleabilite maleabilite - 10]
+      ifelse maleabilite > 10 [set maleabilite maleabilite - 10] [set maleabilite 0]]
     [if alea < maleabilite
       [
         set opinion-autre [opinion] of one-of turtles in-radius 1
