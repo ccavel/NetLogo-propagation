@@ -3,14 +3,9 @@ globals [
   opinion-globale ;; l'opinion de la population entre 0 (bleu) et la population (rouge) (opinion-somme/population)
   opinion-autre ;; opinion de la tortue discutant avec la tortue sujet
   alea ;; variable permettant de définir un nombre entre 0 et 100
+  voteBleu ;; variable retennant le nombre de votes bleus au moment de l'élection
+  voteRouge ;; variable retennant le nombre de votes rouges au moment de l'élection
   i ;; compteur
-  selected ;; variable de selection d'un agent
-
-  dark-blue
-  light-blue
-  dark-red
-  light-red
-  neutral-color
 ]
 
 turtles-own [
@@ -63,7 +58,6 @@ to setup
 end
 
 to go
-  if mouse-down? [changer-inspect] ;; si le bouton de la souris est pressé alors faire changer-inspect
   ask turtles
   [
     ifelse rural? [chercher-ami-campagne] [chercher-ami-ville] ;; recherche d'un ami avec qui discuter
@@ -79,6 +73,10 @@ to go
     set opinion-somme 0 ;; remise a 0 de la variable intermédiaire
     set i 0 ;; remise à 0 du compteur
     ]
+  ]
+  if ( ticks >= 3000 ) [
+    voter
+    stop
   ]
   tick
 end
@@ -142,18 +140,35 @@ to convaincre-moi
       if alea < maleabilite ;; si la discussion a été convaincante alors
       [
         set opinion-autre [opinion] of one-of turtles in-radius 1 ;; choisir une opinion parmis ses voisins
-        ifelse opinion-autre >= opinion [set opinion opinion + 5] [set opinion opinion - 5] ;; //!!\\ A REVOIR si son opinion est supérieure, augmenter la sienne sinon la diminuer
+        if opinion-autre > opinion [set opinion opinion + 5] ;; si son opinion est supérieure, augmenter la sienne sinon la diminuer
+        if opinion-autre < opinion [set opinion opinion - 5]
         set opinion [opinion] of one-of turtles in-radius 1
       ]
     set maleabilite maleabilite - 10]
     [if alea < maleabilite
       [
         set opinion-autre [opinion] of one-of turtles in-radius 1
-        ifelse opinion-autre >= opinion [set opinion opinion + 5] [set opinion opinion - 5] ;; //!!\\ A REVOIR
+        if opinion-autre > opinion [set opinion opinion + 5]
+        if opinion-autre < opinion [set opinion opinion - 5]
         ;set opinion [opinion] of one-of turtles in-radius 1
       ]
     ]
   set opinion-somme opinion-somme + opinion
+end
+
+to voter
+  set voteBleu 0
+  set voteRouge 0
+  ask turtles[
+    ifelse opinion < 40 [set voteBleu  (voteBleu + 1)]
+    [ifelse opinion < 50 [
+      set alea random 2
+      set voteBleu (voteBleu + 1 * alea)
+    ]
+    [ifelse opinion > 60 [set voteRouge (voteRouge + 1)]
+    [ set alea random 2
+          set voteRouge (voteRouge + 1 * alea)]]]
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -405,6 +420,28 @@ NIL
 NIL
 NIL
 1
+
+MONITOR
+170
+290
+244
+335
+NIL
+VoteRouge
+17
+1
+11
+
+MONITOR
+253
+290
+325
+335
+NIL
+VoteBleu
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
