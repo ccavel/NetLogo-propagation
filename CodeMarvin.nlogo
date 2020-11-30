@@ -4,6 +4,12 @@ globals [
   opinion-autre ;; opinion de la tortue discutant avec la tortue sujet
   alea ;; variable permettant de définir un nombre entre 0 et 100
   i ;; compteur
+
+  dark-blue
+  light-blue
+  dark-red
+  light-red
+  neutral-color
 ]
 
 turtles-own [
@@ -17,6 +23,11 @@ turtles-own [
 
 to setup
   clear-all
+  set dark-blue 105
+  set light-blue 97
+  set neutral-color 9
+  set light-red 17
+  set dark-red 14
   stop-inspecting-dead-agents
   set-default-shape turtles "person"
   set i 0 ;; initialisation du compteur
@@ -27,10 +38,10 @@ to setup
     set influence random 51 ;; donne la force d'influence de 0 à 10
     set size 1
     ;; donne la couleur en fonction de l'opinion
-    ifelse opinion < 20 [set color blue]
-    [ifelse opinion < 40  [set color sky]
-      [ifelse opinion < 60  [set color violet]
-        [ifelse opinion < 80  [set color orange] [set color red]]]]
+    ifelse opinion < 20 [set color dark-blue]
+    [ifelse opinion < 40  [set color light-blue]
+      [ifelse opinion < 60  [set color neutral-color]
+        [ifelse opinion < 80  [set color light-red] [set color dark-red]]]]
     if influence = 50 [set size 2] ;; représente les plus gros influenceurs
     ifelse i < vieux/jeunes [set vieux? true set shape "star"] [set vieux? false set shape "triangle"] ;; divise la population en vieux et jeunes
     ifelse i < noncadres/cadres [set cadre? true] [set cadre? false] ;; divise la population en cadres et non cadres
@@ -54,10 +65,10 @@ to go
   [
     ifelse rural? [chercher-ami-campagne] [chercher-ami-ville] ;; recherche d'un ami avec qui discuter
     convaincre-moi ;; modification de l'opinion et actualisation de la couleur de la tortue en fonction
-    ifelse opinion < 20 [set color blue]
-    [ifelse opinion < 40 [set color sky]
-      [ifelse opinion < 60 [set color violet]
-        [ifelse opinion < 80 [set color orange] [set color red]]]]
+    ifelse opinion < 20 [set color dark-blue]
+    [ifelse opinion < 40 [set color light-blue]
+      [ifelse opinion < 60 [set color neutral-color]
+        [ifelse opinion < 80 [set color light-red] [set color dark-red]]]]
     set i i + 1 ;; tour de compteur
     if i = 1000 ;; si on a fait toutes les tortues, on actualise l'opinion globale sinon rien
     [
@@ -277,17 +288,17 @@ true
 "" ""
 PENS
 "0-20" 10.0 0 -13345367 true "" "plot count turtles with [opinion < 20]"
-"20-40" 10.0 0 -13791810 true "" "plot count turtles with [opinion < 40 and opinion > 19.99]"
-"40-60" 10.0 0 -8630108 true "" "plot count turtles with [opinion < 60 and opinion > 39.99]"
-"60-80" 10.0 0 -955883 true "" "plot count turtles with [opinion < 80 and opinion > 59.99]"
-"80-100" 10.0 0 -2674135 true "" "plot count turtles with [opinion > 79.99]"
+"20-40" 10.0 0 -8275240 true "" "plot count turtles with [opinion < 40 and opinion > 19.99]"
+"40-60" 10.0 0 -7500403 true "" "plot count turtles with [opinion < 60 and opinion > 39.99]"
+"60-80" 10.0 0 -1604481 true "" "plot count turtles with [opinion < 80 and opinion > 59.99]"
+"80-100" 10.0 0 -5298144 true "" "plot count turtles with [opinion > 79.99]"
 
 BUTTON
 348
 506
-467
+502
 539
-Flash news bleu
+Flash news bleu foncé
 ask n-of nombre turtles [set opinion random 21]\n
 NIL
 1
@@ -300,10 +311,10 @@ NIL
 1
 
 SLIDER
-591
-544
-809
-577
+554
+559
+772
+592
 nombre
 nombre
 10
@@ -315,11 +326,11 @@ personnes influencées
 HORIZONTAL
 
 BUTTON
-470
-506
-583
-539
-Flash news ciel
+346
+541
+497
+574
+Flash news bleu claire
 ask n-of nombre turtles [set opinion 20 + random 21]
 NIL
 1
@@ -332,11 +343,11 @@ NIL
 1
 
 BUTTON
-587
-505
-694
-538
-Flash news violet
+642
+506
+775
+539
+Flash news neutre
 ask n-of nombre turtles [set opinion 40 + random 21]
 NIL
 1
@@ -350,10 +361,10 @@ NIL
 
 BUTTON
 347
-543
-468
-576
-Flash news orange
+577
+501
+610
+Flash news rouge clair
 ask n-of nombre turtles [set opinion 60 + random 21]
 NIL
 1
@@ -366,11 +377,11 @@ NIL
 1
 
 BUTTON
-471
-543
-586
-576
-Flash news rouge
+343
+616
+506
+649
+Flash news rouge foncé
 ask n-of nombre turtles [set opinion 80 + random 21]
 NIL
 1
