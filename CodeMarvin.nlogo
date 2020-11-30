@@ -6,6 +6,13 @@ globals [
   voteBleu ;; variable retennant le nombre de votes bleus au moment de l'élection
   voteRouge ;; variable retennant le nombre de votes rouges au moment de l'élection
   i ;; compteur
+  selected ;; l'agent selectionné
+
+  dark-blue
+  light-blue
+  neutral-color
+  light-red
+  dark-red
 ]
 
 turtles-own [
@@ -58,6 +65,7 @@ to setup
 end
 
 to go
+  if mouse-down? [changer-inspect] ;; si le bouton de la souris est pressé alors faire changer-inspect
   ask turtles
   [
     ifelse rural? [chercher-ami-campagne] [chercher-ami-ville] ;; recherche d'un ami avec qui discuter
