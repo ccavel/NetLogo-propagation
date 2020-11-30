@@ -124,14 +124,15 @@ to convaincre-moi
       if alea < maleabilite ;; si la discussion a été convaincante alors
       [
         set opinion-autre [opinion] of one-of turtles in-radius 1 ;; choisir une opinion parmis ses voisins
-        ifelse opinion-autre > opinion [set opinion opinion + 5] [set opinion opinion - 5] ;; //!!\\ A REVOIR si son opinion est supérieure, augmenter la sienne sinon la diminuer
+        ifelse opinion-autre > opinion [set opinion opinion + 5]  ;;si son opinion est supérieure, augmenter la sienne sinon la diminuer
         set opinion [opinion] of one-of turtles in-radius 1
       ]
     set maleabilite maleabilite - 10]
     [if alea < maleabilite
       [
         set opinion-autre [opinion] of one-of turtles in-radius 1
-        ifelse opinion-autre >= opinion [set opinion opinion + 5] [set opinion opinion - 5] ;; //!!\\ A REVOIR
+        if opinion-autre > opinion [set opinion opinion + 5]
+        if opinion-autre < opinion [set opinion opinion - 5]
         ;set opinion [opinion] of one-of turtles in-radius 1
       ]
     ]
