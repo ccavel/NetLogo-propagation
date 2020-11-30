@@ -4,6 +4,7 @@ globals [
   opinion-autre ;; opinion de la tortue discutant avec la tortue sujet
   alea ;; variable permettant de définir un nombre entre 0 et 100
   i ;; compteur
+  selected ;; variable de selection d'un agent
 
   dark-blue
   light-blue
@@ -23,6 +24,7 @@ turtles-own [
 
 to setup
   clear-all
+  set selected nobody
   set dark-blue 105
   set light-blue 97
   set neutral-color 9
@@ -53,14 +55,15 @@ to setup
   ;;setup-patches
   set opinion-globale opinion-somme / population ;; calcul de l'opinion global
   set i 0 ;; reset du compteur pour d'autres utilisation dans le reste du code
-  watch one-of turtles with [ not hidden? ]
-    clear-drawing
-    ask subject [ pen-down ]
-    inspect subject
+  watch one-of turtles ;; permet d'observer un agent aléatoire au début de la simulation
+  inspect subject
+  set selected subject
+  ask selected [pen-down] ;; on demande a l'agent selectionné de dessiner sa trace de déplacement
   reset-ticks
 end
 
 to go
+  if mouse-down? [changer-inspect] ;; si le bouton de la souris est pressé alors faire changer-inspect
   ask turtles
   [
     ifelse rural? [chercher-ami-campagne] [chercher-ami-ville] ;; recherche d'un ami avec qui discuter
@@ -78,6 +81,16 @@ to go
     ]
   ]
   tick
+end
+
+to changer-inspect ;; permet de changer d'agent à observer
+  ask selected [pen-up]
+  ask selected [ stop-inspecting self ]
+  clear-drawing
+  set selected min-one-of turtles [distancexy mouse-xcor mouse-ycor] ;; selectionne l'agent le plus proche du curseur de la souris
+  watch selected
+  inspect selected
+  ask selected [pen-down]
 end
 
 to chercher-ami-campagne
