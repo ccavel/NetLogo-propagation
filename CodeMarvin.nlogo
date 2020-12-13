@@ -20,6 +20,7 @@ turtles-own [
   vieux? ;; est-il vieux ou jeune, si c'est vrai, il est vieux
   cadre? ;; est-il cadre ou non, si c'est vrai, il est cadre
   opinion ;; quel est son opinion politique de 0 (bleu) à 100 (rouge)
+  a-deja-interagit;
   influence ;; c'est le nombre de personnes autour de lui qu'il peut influencer à chaque tick de 1 à 50
   maleabilite ;; taux de 0 à 100 qui détermine à quel point quelqu'un peut changer d'avis
 ]
@@ -41,6 +42,7 @@ to setup
     set opinion-somme opinion-somme + opinion ;; fait la somme de tous les opinions pour vérifier les conditions initiales
     set influence random 51 ;; donne la force d'influence de 0 à 10
     set size 1
+    set a-deja-interagit 0;
     ;; donne la couleur en fonction de l'opinion
     ifelse opinion < 20 [set color dark-blue]
     [ifelse opinion < 40  [set color light-blue]
@@ -66,6 +68,8 @@ end
 
 to go
   if mouse-down? [changer-inspect] ;; si le bouton de la souris est pressé alors faire changer-inspect
+  ask turtles
+  [set a-deja-interagit 0]
   ask turtles
   [
     ifelse rural? [chercher-ami-campagne] [chercher-ami-ville] ;; recherche d'un ami avec qui discuter
@@ -140,29 +144,65 @@ to chercher-ami-ville ;; pareil que pour chercher-ami-campagne mais avec un plus
     fd random 4
   ]
 end
-
 to convaincre-moi
-  set alea random 101 ;; tirer au sort un nombre représentant si la discussion avec un ami a su convaincre ou non
-  ifelse one-of (turtles in-radius 1) with [influence = 50] != nobody ;; si un de ses voisins direct est un influenceur et qu'il existe un voisin avec qui discuter alors la tortue deviens plus maléable
-    [set maleabilite maleabilite + 10
-      if alea < maleabilite ;; si la discussion a été convaincante alors
-      [
-        set opinion-autre [opinion] of one-of turtles in-radius 1 ;; choisir une opinion parmis ses voisins
-        if opinion-autre > opinion [set opinion opinion + 5] ;; si son opinion est supérieure, augmenter la sienne sinon la diminuer
-        if opinion-autre < opinion [set opinion opinion - 5]
-        set opinion [opinion] of one-of turtles in-radius 1
-      ]
-      ifelse maleabilite > 10 [set maleabilite maleabilite - 10] [set maleabilite 0]]
-    [if alea < maleabilite
-      [
-        set opinion-autre [opinion] of one-of turtles in-radius 1
-        if opinion-autre > opinion [set opinion opinion + 5]
-        if opinion-autre < opinion [set opinion opinion - 5]
-        ;set opinion [opinion] of one-of turtles in-radius 1
-      ]
+  ;pour toutes les personnes autour de moi
+
+  let opinion-tortue-base opinion;
+
+  ask (other turtles-here)
+  [
+    if a-deja-interagit = 0
+    [
+    ifelse
+      ;on est pas d'accord, je confirme mon opinion
+    abs(opinion-tortue-base  - opinion) > seuil-confirmation [
+      set opinion opinion - force-confirmation * (opinion-tortue-base  - opinion)
+      set opinion-tortue-base opinion-tortue-base - force-confirmation * (opinion - opinion-tortue-base)]
+
+      ;on est d'accord, je vais vers un juste milieu
+    [
+      set opinion opinion + force-confirmation * (opinion-tortue-base  - opinion)
+      set opinion-tortue-base  opinion-tortue-base  + force-confirmation * (opinion - opinion-tortue-base )]
     ]
-  set opinion-somme opinion-somme + opinion
+
+
+
+    (ifelse
+    opinion-tortue-base < 0 [ set opinion-tortue-base 0]
+    opinion-tortue-base > 100 [set opinion-tortue-base 100])
+
+    (ifelse
+    opinion < 0 [ set opinion 0 ]
+    opinion > 100 [set opinion 100])
+
+
+  ]
+  set a-deja-interagit 1
+  set opinion opinion-tortue-base
+
 end
+;to convaincre-moi
+;  set alea random 101 ;; tirer au sort un nombre représentant si la discussion avec un ami a su convaincre ou non
+;  ifelse one-of (turtles in-radius 1) with [influence = 50] != nobody ;; si un de ses voisins direct est un influenceur et qu'il existe un voisin avec qui discuter alors la tortue deviens plus maléable
+;    [set maleabilite maleabilite + 10
+;      if alea < maleabilite ;; si la discussion a été convaincante alors
+;      [
+;        set opinion-autre [opinion] of one-of turtles in-radius 1 ;; choisir une opinion parmis ses voisins
+;        if opinion-autre > opinion [set opinion opinion + 5] ;; si son opinion est supérieure, augmenter la sienne sinon la diminuer
+;        if opinion-autre < opinion [set opinion opinion - 5]
+;        set opinion [opinion] of one-of turtles in-radius 1
+;      ]
+;      ifelse maleabilite > 10 [set maleabilite maleabilite - 10] [set maleabilite 0]]
+;    [if alea < maleabilite
+;      [
+;        set opinion-autre [opinion] of one-of turtles in-radius 1
+;        if opinion-autre > opinion [set opinion opinion + 5]
+;        if opinion-autre < opinion [set opinion opinion - 5]
+;        ;set opinion [opinion] of one-of turtles in-radius 1
+;      ]
+;    ]
+;  set opinion-somme opinion-somme + opinion
+;end
 
 to voter
   set voteBleu 0
@@ -450,6 +490,36 @@ VoteBleu
 17
 1
 11
+
+SLIDER
+881
+130
+1053
+163
+seuil-confirmation
+seuil-confirmation
+0
+100
+60.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+880
+203
+1052
+236
+force-confirmation
+force-confirmation
+0.01
+0.5
+0.41
+0.01
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
