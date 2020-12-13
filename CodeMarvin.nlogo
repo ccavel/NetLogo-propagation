@@ -155,7 +155,10 @@ to convaincre-moi
     [
     ifelse
       ;on est pas d'accord, je confirme mon opinion
-    abs(opinion-tortue-base  - opinion) > seuil-confirmation [
+    abs(opinion-tortue-base  - opinion) > seuil-confirmation
+      ;;seuil-confirmation = combien de point d'opinion pour dire qu'on pense trop différement
+      ;;force de confirmation == facteur pour savoir à quelle amplitude on change notre opinion (sans doute à relier avec la maléabilité...)
+      [
       set opinion opinion - force-confirmation * (opinion-tortue-base  - opinion)
       set opinion-tortue-base opinion-tortue-base - force-confirmation * (opinion - opinion-tortue-base)]
 
