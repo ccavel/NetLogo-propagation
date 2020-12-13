@@ -16,9 +16,9 @@ globals [
 ]
 
 turtles-own [
-  rural? ;; est-il de la ville ou de la campagne, si c'est vrai, il est de la campagne
+  ethnie1? ;; est-il de la ville ou de la campagne, si c'est vrai, il est de la campagne
   vieux? ;; est-il vieux ou jeune, si c'est vrai, il est vieux
-  cadre? ;; est-il cadre ou non, si c'est vrai, il est cadre
+  CSP1? ;; est-il cadre ou non, si c'est vrai, il est cadre
   opinion ;; quel est son opinion politique de 0 (bleu) à 100 (rouge)
   a-deja-interagit;
   influence ;; c'est le nombre de personnes autour de lui qu'il peut influencer à chaque tick de 1 à 50
@@ -42,19 +42,19 @@ to setup
     set opinion-somme opinion-somme + opinion ;; fait la somme de tous les opinions pour vérifier les conditions initiales
     set influence random 51 ;; donne la force d'influence de 0 à 10
     set size 1
-    set a-deja-interagit 0;
+    set a-deja-interagit 0; évite qu'il y ait des doubles interactions dans convaincre-moi
     ;; donne la couleur en fonction de l'opinion
     ifelse opinion < 20 [set color dark-blue]
     [ifelse opinion < 40  [set color light-blue]
       [ifelse opinion < 60  [set color neutral-color]
         [ifelse opinion < 80  [set color light-red] [set color dark-red]]]]
     if influence = 50 [set size 2] ;; représente les plus gros influenceurs
-    ifelse i < vieux/jeunes [set vieux? true set shape "star"] [set vieux? false set shape "triangle"] ;; divise la population en vieux et jeunes
-    ifelse i < noncadres/cadres [set cadre? true] [set cadre? false] ;; divise la population en cadres et non cadres
-    ifelse i < ruraux/urbains [set rural? true] [set rural? false] ;; divise la population en ruraux et urbains
+    ifelse i < nombre-individu-vieux [set vieux? true set shape "star"] [set vieux? false set shape "triangle"] ;; divise la population en vieux et jeunes
+    ifelse i < nombre-individu-CSP1 [set CSP1? true] [set CSP1? false] ;; divise la population en cadres et non cadres
+    ifelse i < nombre-individu-ethnie1 [set ethnie1? true] [set ethnie1? false] ;; divise la population en ruraux et urbains
     set i i + 1 ;; tour de compteur
     ifelse vieux? [set maleabilite random 31] [set maleabilite random 71] ;;définie la maléabilité de chaque tortue entre 0 et 30 pour les vieux ou entre 0 et 70 pour les jeunes
-    ifelse cadre? [ifelse maleabilite > 10 [set maleabilite maleabilite - 10] [set maleabilite 0]] [set maleabilite maleabilite + 10] ;; coeff de maleabilite en fct de si une personne est cadre ou non
+    ifelse CSP1? [ifelse maleabilite > 10 [set maleabilite maleabilite - 10] [set maleabilite 0]] [set maleabilite maleabilite + 10] ;; coeff de maleabilite en fct de si une personne est cadre ou non
   ]
   ;;setup-patches
   set opinion-globale opinion-somme / population ;; calcul de l'opinion global
@@ -72,7 +72,8 @@ to go
   [set a-deja-interagit 0]
   ask turtles
   [
-    ifelse rural? [chercher-ami-campagne] [chercher-ami-ville] ;; recherche d'un ami avec qui discuter
+    chercher-personne-similaire
+    fd random mobilite ;; avancer de 0, 1 ou 2 patch
     convaincre-moi ;; modification de l'opinion et actualisation de la couleur de la tortue en fonction
     ifelse opinion < 20 [set color dark-blue]
     [ifelse opinion < 40 [set color light-blue]
@@ -103,47 +104,46 @@ to changer-inspect ;; permet de changer d'agent à observer
   ask selected [pen-down]
 end
 
-to chercher-ami-campagne
-  set alea random 101
-  ifelse alea < 90 ;; 90% de chance d'aller voir quelqu'un qui nous ressemble sinon voir un différent
+to chercher-personne-similaire
+  let ethnie1?-tortue-base ethnie1?
+  let vieux?-tortue-base vieux?
+  let CSP1?-tortue-base CSP1?
+
+  ;même ethnie, age et socio
+  (ifelse
+  one-of (turtles in-radius 4) with [ethnie1? = ethnie1?-tortue-base and vieux? = vieux?-tortue-base and CSP1? = CSP1?-tortue-base ] != nobody
   [
-    if vieux? and one-of (turtles in-radius 3) with [vieux? = true] != nobody ;; si il existe quelqu'un dans les 3 patch et que c'est un vieux faire
-    [
-      face one-of (turtles in-radius 3) with [vieux? = true] ;; se tourner vers un des vieux
-      fd random 2 ;; avancer de 0 ou 1 patch
-    ]
-    if not vieux? and one-of (turtles in-radius 3) with [vieux? = false] != nobody
-    [
-      face one-of (turtles in-radius 3) with [vieux? = false] ;; se tourner vers un jeune
-      fd random 3 ;; avancer de 0, 1 ou 2 patch
-    ]
+    face one-of (turtles in-radius 4) with [ethnie1? = ethnie1?-tortue-base and vieux? = vieux?-tortue-base and CSP1? = CSP1?-tortue-base ]
   ]
+  ;même ethnie, age
+  (one-of (turtles in-radius 4) with [ethnie1? = ethnie1?-tortue-base and vieux? = vieux?-tortue-base]) != nobody
   [
-    if vieux? and one-of (turtles in-radius 3) with [vieux? = false] != nobody ;; si il existe quelqu'un dans les 3 patch et que c'est un jeune faire
-    [
-      face one-of (turtles in-radius 3) with [vieux? = false] ;; se tourner vers un des jeunes
-      fd random 2 ;; avancer de 0 ou 1 patch
-    ]
-    if not vieux? and one-of (turtles in-radius 3) with [vieux? = true] != nobody
-    [
-      face one-of (turtles in-radius 3) with [vieux? = true] ;; se tourner vers un vieux
-      fd random 3 ;; avancer de 0, 1 ou 2 patch
-    ]
+    face one-of (turtles in-radius 4) with [ethnie1? = ethnie1?-tortue-base and vieux? = vieux?-tortue-base]
   ]
+  ;même ethnie
+  one-of (turtles in-radius 4) with [ethnie1? = ethnie1?-tortue-base] != nobody
+  [
+    face one-of (turtles in-radius 4) with [ethnie1? = ethnie1?-tortue-base]
+  ]
+  ;même age et socio
+  one-of (turtles in-radius 4) with [vieux? = vieux?-tortue-base and CSP1? = CSP1?-tortue-base ] != nobody
+  [
+    face one-of (turtles in-radius 4) with [vieux? = vieux?-tortue-base and CSP1? = CSP1?-tortue-base ]
+  ]
+  ;même age
+  one-of (turtles in-radius 4) with [vieux? = vieux?-tortue-base] != nobody
+  [
+    face one-of (turtles in-radius 4) with [vieux? = vieux?-tortue-base]
+  ]
+  ;même socio
+  one-of (turtles in-radius 4) with [CSP1? = CSP1?-tortue-base ] != nobody
+  [
+    face one-of (turtles in-radius 4) with [CSP1? = CSP1?-tortue-base ]
+  ])
+
 end
 
-to chercher-ami-ville ;; pareil que pour chercher-ami-campagne mais avec un plus grand rayon d'action
-  if vieux? and one-of (turtles in-radius 5) with [vieux? = true] != nobody
-  [
-    face one-of (turtles in-radius 5) with [vieux? = true]
-    fd random 3
-  ]
- if not vieux? and one-of (turtles in-radius 5) with [vieux? = false] != nobody
-  [
-    face one-of (turtles in-radius 5) with [vieux? = false]
-    fd random 4
-  ]
-end
+
 to convaincre-moi
   ;pour toutes les personnes autour de moi
 
@@ -177,32 +177,11 @@ to convaincre-moi
 
 
   ]
-  set a-deja-interagit 1
+  set a-deja-interagit 1 ; évite qu'il y ait des doubles interactions
   set opinion opinion-tortue-base
 
 end
-;to convaincre-moi
-;  set alea random 101 ;; tirer au sort un nombre représentant si la discussion avec un ami a su convaincre ou non
-;  ifelse one-of (turtles in-radius 1) with [influence = 50] != nobody ;; si un de ses voisins direct est un influenceur et qu'il existe un voisin avec qui discuter alors la tortue deviens plus maléable
-;    [set maleabilite maleabilite + 10
-;      if alea < maleabilite ;; si la discussion a été convaincante alors
-;      [
-;        set opinion-autre [opinion] of one-of turtles in-radius 1 ;; choisir une opinion parmis ses voisins
-;        if opinion-autre > opinion [set opinion opinion + 5] ;; si son opinion est supérieure, augmenter la sienne sinon la diminuer
-;        if opinion-autre < opinion [set opinion opinion - 5]
-;        set opinion [opinion] of one-of turtles in-radius 1
-;      ]
-;      ifelse maleabilite > 10 [set maleabilite maleabilite - 10] [set maleabilite 0]]
-;    [if alea < maleabilite
-;      [
-;        set opinion-autre [opinion] of one-of turtles in-radius 1
-;        if opinion-autre > opinion [set opinion opinion + 5]
-;        if opinion-autre < opinion [set opinion opinion - 5]
-;        ;set opinion [opinion] of one-of turtles in-radius 1
-;      ]
-;    ]
-;  set opinion-somme opinion-somme + opinion
-;end
+
 
 to voter
   set voteBleu 0
@@ -247,10 +226,10 @@ ticks
 30.0
 
 INPUTBOX
-36
-53
-191
-113
+24
+41
+203
+101
 population
 1000.0
 1
@@ -258,15 +237,15 @@ population
 Number
 
 SLIDER
-26
-127
-198
-160
-vieux/jeunes
-vieux/jeunes
+24
+147
+203
+180
+nombre-individu-vieux
+nombre-individu-vieux
 0
 population
-470.0
+480.0
 10
 1
 NIL
@@ -275,25 +254,25 @@ HORIZONTAL
 SLIDER
 24
 185
-196
+204
 218
-noncadres/cadres
-noncadres/cadres
+nombre-individu-CSP1
+nombre-individu-CSP1
 0
 population
-760.0
+60.0
 10
 1
 NIL
 HORIZONTAL
 
 SLIDER
-26
-240
-198
-273
-ruraux/urbains
-ruraux/urbains
+24
+109
+203
+142
+nombre-individu-ethnie1
+nombre-individu-ethnie1
 0
 population
 900.0
@@ -303,10 +282,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-233
-32
-296
-65
+237
+96
+300
+129
 NIL
 setup
 NIL
@@ -370,10 +349,10 @@ PENS
 "80-100" 10.0 0 -5298144 true "" "plot count turtles with [opinion > 79.99]"
 
 BUTTON
-348
-506
-502
-539
+346
+505
+500
+538
 Flash news bleu foncé
 ask n-of nombre turtles [set opinion random 21]\n
 NIL
@@ -453,10 +432,10 @@ NIL
 1
 
 BUTTON
-343
-616
-506
-649
+346
+614
+509
+647
 Flash news rouge foncé
 ask n-of nombre turtles [set opinion 80 + random 21]
 NIL
@@ -517,6 +496,21 @@ force-confirmation
 0.5
 0.41
 0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+901
+364
+1073
+397
+mobilite
+mobilite
+0
+4
+4.0
+1
 1
 NIL
 HORIZONTAL
