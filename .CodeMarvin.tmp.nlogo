@@ -7,6 +7,7 @@ globals [
   voteRouge ;; variable retennant le nombre de votes rouges au moment de l'élection
   i ;; compteur
   selected ;; l'agent selectionné
+  jour ;; jour actuel de la simulation,
 
   dark-blue
   light-blue
@@ -88,9 +89,11 @@ to go
     set i 0 ;; remise à 0 du compteur
     ]
   ]
-  if ( ticks >= 3000 ) [
-    voter
-    stop
+  if ( ticks mod 100 = 0 ) and ticks != 0 [
+    set jour (jour + 1)
+    if jour = joursmax [
+      voter
+      stop]
   ]
   tick
 end
@@ -193,7 +196,7 @@ to voter
   ask turtles[
     ifelse opinion < 40 [set voteBleu  (voteBleu + 1)]
     [ifelse opinion < 50 [
-      if random 100  voteblanc [set voteBleu (voteBleu + 1)]
+      if random 100 > voteblanc [set voteBleu (voteBleu + 1)]
     ]
     [ifelse opinion > 60 [set voteRouge (voteRouge + 1)]
         [ if random 100 > voteblanc [set voteRouge (voteRouge + 1)]]]]
@@ -573,11 +576,37 @@ voteblanc
 voteblanc
 0
 100
-100.0
+50.0
 1
 1
 %
 HORIZONTAL
+
+SLIDER
+867
+260
+1063
+293
+joursmax
+joursmax
+0
+100
+10.0
+1
+1
+jours avant vote
+HORIZONTAL
+
+MONITOR
+941
+300
+998
+345
+NIL
+jour
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
