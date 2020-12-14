@@ -193,12 +193,10 @@ to voter
   ask turtles[
     ifelse opinion < 40 [set voteBleu  (voteBleu + 1)]
     [ifelse opinion < 50 [
-      set alea random 2
-      set voteBleu (voteBleu + 1 * alea)
+      if random 100 > voteblanc [set voteBleu (voteBleu + 1)]
     ]
     [ifelse opinion > 60 [set voteRouge (voteRouge + 1)]
-    [ set alea random 2
-          set voteRouge (voteRouge + 1 * alea)]]]
+        [ if random 100 > voteblanc [set voteRouge (voteRouge + 1)]]]]
   ]
 end
 
@@ -565,6 +563,21 @@ bounce?
 0
 1
 -1000
+
+SLIDER
+27
+228
+199
+261
+voteblanc
+voteblanc
+0
+100
+50.0
+1
+1
+%
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
