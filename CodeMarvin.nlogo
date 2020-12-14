@@ -141,7 +141,7 @@ to convaincre-moi
       ;on est pas d'accord, je confirme mon opinion
     abs(opinion-tortue-base  - opinion) > seuil-confirmation
       ;;seuil-confirmation = combien de point d'opinion pour dire qu'on pense trop différement
-      ;;force de confirmation == facteur pour savoir à quelle amplitude on change notre opinion (sans doute à relier avec la maléabilité...)
+      ;;force de confirmation == facteur pour savoir à quelle amplitude on change notre opinion
       [
       set opinion opinion - force-confirmation * (opinion-tortue-base  - opinion)
       set opinion-tortue-base opinion-tortue-base - force-confirmation * (opinion - opinion-tortue-base)]
@@ -336,7 +336,7 @@ BUTTON
 500
 538
 Flash news bleu foncé
-ask n-of nombre turtles [set opinion random 21]\n
+ask n-of nombre turtles \n[\nset alea random 21\nifelse (opinion < 21) \n   [\n   ifelse (opinion < 11)\n      [ \n      let opinion-inter opinion + random 6\n      ifelse (opinion-inter > 10) \n         [\n         set opinion 10\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n      [\n      let opinion-inter opinion - random 6\n      ifelse (opinion-inter < 11) \n         [\n         set opinion 10\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n   ]\n   [\n   set opinion opinion - random 6\n   ]\n]
 NIL
 1
 T
@@ -355,8 +355,8 @@ SLIDER
 nombre
 nombre
 10
-100
-100.0
+1000
+1000.0
 10
 1
 personnes influencées
@@ -368,7 +368,7 @@ BUTTON
 497
 574
 Flash news bleu claire
-ask n-of nombre turtles [set opinion 20 + random 21]
+ask n-of nombre turtles \n[\nset alea 20 + random 21\nifelse (opinion < 41 and opinion > 20) \n   [\n   ifelse (opinion < 31)\n      [ \n      let opinion-inter opinion + random 6\n      ifelse (opinion-inter > 30) \n         [\n         set opinion 30\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n      [\n      let opinion-inter opinion - random 6\n      ifelse (opinion-inter < 31) \n         [\n         set opinion 30\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n   ]\n   [\n   ifelse (opinion < 21)\n      [\n      set opinion opinion + random 6\n      ]\n      [\n      set opinion opinion - random 6\n      ]\n   ]\n]
 NIL
 1
 T
@@ -385,7 +385,7 @@ BUTTON
 775
 539
 Flash news neutre
-ask n-of nombre turtles [set opinion 40 + random 21]
+ask n-of nombre turtles \n[\nset alea 40 + random 21\nifelse (opinion < 61) \n   [\n   ifelse (opinion < 51)\n      [ \n      let opinion-inter opinion + random 6\n      ifelse (opinion-inter > 50) \n         [\n         set opinion 50\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n      [\n      let opinion-inter opinion - random 6\n      ifelse (opinion-inter < 51) \n         [\n         set opinion 50\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n   ]\n   [\n   ifelse (opinion < 41)\n      [\n      set opinion opinion + random 6\n      ]\n      [\n      set opinion opinion - random 6\n      ]\n   ]\n]
 NIL
 1
 T
@@ -397,12 +397,12 @@ NIL
 1
 
 BUTTON
-347
+346
 577
-501
+500
 610
 Flash news rouge clair
-ask n-of nombre turtles [set opinion 60 + random 21]
+ask n-of nombre turtles \n[\nset alea 60 + random 21\nifelse (opinion < 81 and opinion > 60) \n   [\n   ifelse (opinion < 71)\n      [ \n      let opinion-inter opinion + random 6\n      ifelse (opinion-inter > 70) \n         [\n         set opinion 70\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n      [\n      let opinion-inter opinion - random 6\n      ifelse (opinion-inter < 71) \n         [\n         set opinion 70\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n   ]\n   [\n   ifelse (opinion < 81)\n      [\n      set opinion opinion + random 6\n      ]\n      [\n      set opinion opinion - random 6\n      ]\n   ]\n]
 NIL
 1
 T
@@ -419,7 +419,7 @@ BUTTON
 509
 647
 Flash news rouge foncé
-ask n-of nombre turtles [set opinion 80 + random 21]
+ask n-of nombre turtles \n[\nset alea 80 + random 21\nifelse (opinion < 101) \n   [\n   ifelse (opinion < 91)\n      [ \n      let opinion-inter opinion + random 6\n      ifelse (opinion-inter > 90) \n         [\n         set opinion 90\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n      [\n      let opinion-inter opinion - random 6\n      ifelse (opinion-inter < 91) \n         [\n         set opinion 90\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n   ]\n   [\n   set opinion opinion + random 6\n   ]\n]
 NIL
 1
 T
@@ -476,7 +476,7 @@ force-confirmation
 force-confirmation
 0.01
 0.5
-0.41
+0.39
 0.01
 1
 NIL
