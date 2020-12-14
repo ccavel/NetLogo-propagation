@@ -518,6 +518,23 @@ mobilite
 NIL
 HORIZONTAL
 
+BUTTON
+232
+230
+311
+263
+sondage
+voter
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
 @#$#@#$#@
 ## WHAT IS IT?
 
