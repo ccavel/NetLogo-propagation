@@ -89,7 +89,7 @@ to go
     set i 0 ;; remise à 0 du compteur
     ]
   ]
-  if ( ticks mod 100 = 0 ) and ticks != 0 [
+  if ( ticks mod 100 = 0 ) [
     set jour (jour + 1)
     if jour = joursmax [
       voter
