@@ -1,7 +1,4 @@
 globals [
-  opinion-somme ;; somme de l'opinion de toute la population
-  opinion-globale ;; l'opinion de la population entre 0 (bleu) et la population (rouge) (opinion-somme/population)
-  opinion-autre ;; opinion de la tortue discutant avec la tortue sujet
   alea ;; variable permettant de définir un nombre entre 0 et 100
   voteBleu ;; variable retennant le nombre de votes bleus au moment de l'élection
   voteRouge ;; variable retennant le nombre de votes rouges au moment de l'élection
@@ -22,8 +19,6 @@ turtles-own [
   CSP1? ;; est-il cadre ou non, si c'est vrai, il est cadre
   opinion ;; quel est son opinion politique de 0 (bleu) à 100 (rouge)
   a-deja-interagit;
-  influence ;; c'est le nombre de personnes autour de lui qu'il peut influencer à chaque tick de 1 à 50
-  maleabilite ;; taux de 0 à 100 qui détermine à quel point quelqu'un peut changer d'avis
 ]
 
 to setup
@@ -37,11 +32,9 @@ to setup
   stop-inspecting-dead-agents
   set-default-shape turtles "person"
   set i 0 ;; initialisation du compteur
-  create-turtles population
+  create-turtles 1000
   [ setxy random-xcor random-ycor ;; place les agents de manière aléatoire dans l'environnement
     set opinion random 101 ;; donne une opinion aléatoire entre 0 et 100
-    set opinion-somme opinion-somme + opinion ;; fait la somme de tous les opinions pour vérifier les conditions initiales
-    set influence random 51 ;; donne la force d'influence de 0 à 10
     set size 1
     set a-deja-interagit 0; évite qu'il y ait des doubles interactions dans convaincre-moi
     ;; donne la couleur en fonction de l'opinion
@@ -49,17 +42,11 @@ to setup
     [ifelse opinion < 40  [set color light-blue]
       [ifelse opinion < 60  [set color neutral-color]
         [ifelse opinion < 80  [set color light-red] [set color dark-red]]]]
-    if influence = 50 [set size 2] ;; représente les plus gros influenceurs
     ifelse i < nombre-individu-vieux [set vieux? true set shape "star"] [set vieux? false set shape "triangle"] ;; divise la population en vieux et jeunes
     ifelse i < nombre-individu-CSP1 [set CSP1? true] [set CSP1? false] ;; divise la population en cadres et non cadres
     ifelse i < nombre-individu-ethnie1 [set ethnie1? true] [set ethnie1? false] ;; divise la population en ruraux et urbains
     set i i + 1 ;; tour de compteur
-    ifelse vieux? [set maleabilite random 31] [set maleabilite random 71] ;;définie la maléabilité de chaque tortue entre 0 et 30 pour les vieux ou entre 0 et 70 pour les jeunes
-    ifelse CSP1? [ifelse maleabilite > 10 [set maleabilite maleabilite - 10] [set maleabilite 0]] [set maleabilite maleabilite + 10] ;; coeff de maleabilite en fct de si une personne est cadre ou non
   ]
-  ;;setup-patches
-  set opinion-globale opinion-somme / population ;; calcul de l'opinion global
-  set i 0 ;; reset du compteur pour d'autres utilisation dans le reste du code
   watch one-of turtles ;; permet d'observer un agent aléatoire au début de la simulation
   inspect subject
   set selected subject
@@ -75,19 +62,12 @@ to go
   [
     chercher-personne-similaire
     if bounce? = true [murs]
-    fd random mobilite ;; avancer de 0, 1 ou 2 patch
+    fd random mobilite ;; avancer
     convaincre-moi ;; modification de l'opinion et actualisation de la couleur de la tortue en fonction
     ifelse opinion < 20 [set color dark-blue]
     [ifelse opinion < 40 [set color light-blue]
       [ifelse opinion < 60 [set color neutral-color]
         [ifelse opinion < 80 [set color light-red] [set color dark-red]]]]
-    set i i + 1 ;; tour de compteur
-    if i = 1000 ;; si on a fait toutes les tortues, on actualise l'opinion globale sinon rien
-    [
-    set opinion-globale opinion-somme / population
-    set opinion-somme 0 ;; remise a 0 de la variable intermédiaire
-    set i 0 ;; remise à 0 du compteur
-    ]
   ]
   if ( ticks mod 100 = 0 ) [
     set jour (jour + 1)
@@ -249,26 +229,15 @@ GRAPHICS-WINDOW
 ticks
 30.0
 
-INPUTBOX
-24
-41
-203
-101
-population
-1000.0
-1
-0
-Number
-
 SLIDER
-24
-147
-203
-180
+29
+135
+208
+168
 nombre-individu-vieux
 nombre-individu-vieux
 0
-population
+1000
 480.0
 10
 1
@@ -276,14 +245,14 @@ NIL
 HORIZONTAL
 
 SLIDER
-24
-185
-204
-218
+29
+173
+209
+206
 nombre-individu-CSP1
 nombre-individu-CSP1
 0
-population
+1000
 60.0
 10
 1
@@ -291,14 +260,14 @@ NIL
 HORIZONTAL
 
 SLIDER
-24
-109
-203
-142
+29
+97
+208
+130
 nombre-individu-ethnie1
 nombre-individu-ethnie1
 0
-population
+1000
 900.0
 10
 1
@@ -322,17 +291,6 @@ NIL
 NIL
 1
 
-MONITOR
-31
-290
-162
-335
-NIL
-opinion-globale
-17
-1
-11
-
 BUTTON
 237
 149
@@ -355,22 +313,22 @@ PLOT
 356
 342
 632
-Opinion
+Opinion global
 Ticks
-Opinion
+Opinion (%)
 0.0
 0.0
 0.0
-1000.0
+100.0
 true
 true
 "" ""
 PENS
-"0-20" 10.0 0 -13345367 true "" "plot count turtles with [opinion < 20]"
-"20-40" 10.0 0 -8275240 true "" "plot count turtles with [opinion < 40 and opinion > 19.99]"
-"40-60" 10.0 0 -7500403 true "" "plot count turtles with [opinion < 60 and opinion > 39.99]"
-"60-80" 10.0 0 -1604481 true "" "plot count turtles with [opinion < 80 and opinion > 59.99]"
-"80-100" 10.0 0 -5298144 true "" "plot count turtles with [opinion > 79.99]"
+"0-20" 1.0 0 -13345367 true "" "plot (count turtles with [opinion < 20] / 10)"
+"20-40" 1.0 0 -8275240 true "" "plot (count turtles with [opinion < 40 and opinion > 19.99] / 10)"
+"40-60" 1.0 0 -7500403 true "" "plot (count turtles with [opinion < 60 and opinion > 39.99] / 10)"
+"60-80" 1.0 0 -1604481 true "" "plot (count turtles with [opinion < 80 and opinion > 59.99] / 10)"
+"80-100" 1.0 0 -5298144 true "" "plot (count turtles with [opinion > 79.99] / 10)"
 
 BUTTON
 346
@@ -568,10 +526,10 @@ bounce?
 -1000
 
 SLIDER
-27
-228
-199
-261
+32
+216
+204
+249
 voteblanc
 voteblanc
 0
