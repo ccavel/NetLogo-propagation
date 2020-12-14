@@ -7,7 +7,7 @@ globals [
   voteRouge ;; variable retennant le nombre de votes rouges au moment de l'élection
   i ;; compteur
   selected ;; l'agent selectionné
-  jour ;; jour actuel de la simulation,
+  jour ;; jour actuel de la simulation, 1 jour = 100 ticks
 
   dark-blue
   light-blue
