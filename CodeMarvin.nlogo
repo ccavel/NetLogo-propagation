@@ -15,10 +15,11 @@ globals [
 
 turtles-own [
   ethnie1? ;; est-il de la ville ou de la campagne, si c'est vrai, il est de la campagne
-  vieux? ;; est-il vieux ou jeune, si c'est vrai, il est vieux
+  age;;
   CSP1? ;; est-il cadre ou non, si c'est vrai, il est cadre
   opinion ;; quel est son opinion politique de 0 (bleu) à 100 (rouge)
   a-deja-interagit;
+
 ]
 
 to setup
@@ -32,6 +33,7 @@ to setup
   stop-inspecting-dead-agents
   set-default-shape turtles "person"
   set i 0 ;; initialisation du compteur
+  let j 0;; compte le nb de tortue ethnie 1
   create-turtles 1000
   [ setxy random-xcor random-ycor ;; place les agents de manière aléatoire dans l'environnement
     set opinion random 101 ;; donne une opinion aléatoire entre 0 et 100
@@ -42,9 +44,24 @@ to setup
     [ifelse opinion < 40  [set color light-blue]
       [ifelse opinion < 60  [set color neutral-color]
         [ifelse opinion < 80  [set color light-red] [set color dark-red]]]]
-    ifelse i < nombre-individu-vieux [set vieux? true set shape "star"] [set vieux? false set shape "triangle"] ;; divise la population en vieux et jeunes
-    ifelse i < nombre-individu-CSP1 [set CSP1? true] [set CSP1? false] ;; divise la population en cadres et non cadres
-    ifelse i < nombre-individu-ethnie1 [set ethnie1? true] [set ethnie1? false] ;; divise la population en ruraux et urbains
+
+    set age (18 + random 53)
+
+    ;;fait des combinaison des deux facteurs
+    (ifelse i < nombre-individu-CSP1
+    [set CSP1? true
+      (ifelse (remainder i 2 = 0 and j < nombre-individu-ethnie1)
+        [set ethnie1? true
+        set j j + 1]
+      [set ethnie1? false])
+    ]
+    [set CSP1? false
+     ( ifelse j < nombre-individu-ethnie1
+        [set ethnie1? true
+          set j j + 1]
+        [set ethnie1? false])
+    ])
+
     set i i + 1 ;; tour de compteur
   ]
   watch one-of turtles ;; permet d'observer un agent aléatoire au début de la simulation
@@ -90,39 +107,39 @@ end
 
 to chercher-personne-similaire
   let ethnie1?-tortue-base ethnie1?
-  let vieux?-tortue-base vieux?
+  let age-tortue-base age
   let CSP1?-tortue-base CSP1?
 
   ;même ethnie, age et socio
   (ifelse
-  one-of (turtles in-radius 4) with [ethnie1? = ethnie1?-tortue-base and vieux? = vieux?-tortue-base and CSP1? = CSP1?-tortue-base ] != nobody
+  one-of (turtles in-radius mobilite) with [ethnie1? = ethnie1?-tortue-base and abs(age - age-tortue-base) < 25  and CSP1? = CSP1?-tortue-base ] != nobody
   [
-    face one-of (turtles in-radius 4) with [ethnie1? = ethnie1?-tortue-base and vieux? = vieux?-tortue-base and CSP1? = CSP1?-tortue-base ]
+    face one-of (turtles in-radius mobilite) with [ethnie1? = ethnie1?-tortue-base and abs(age - age-tortue-base) < 25 and CSP1? = CSP1?-tortue-base ]
   ]
   ;même ethnie, age
-  (one-of (turtles in-radius 4) with [ethnie1? = ethnie1?-tortue-base and vieux? = vieux?-tortue-base]) != nobody
+  (one-of (turtles in-radius mobilite) with [ethnie1? = ethnie1?-tortue-base and  abs(age - age-tortue-base) < 25 ]) != nobody
   [
-    face one-of (turtles in-radius 4) with [ethnie1? = ethnie1?-tortue-base and vieux? = vieux?-tortue-base]
+    face one-of (turtles in-radius mobilite) with [ethnie1? = ethnie1?-tortue-base and  abs(age - age-tortue-base) < 25 ]
   ]
   ;même ethnie
-  one-of (turtles in-radius 4) with [ethnie1? = ethnie1?-tortue-base] != nobody
+  one-of (turtles in-radius mobilite) with [ethnie1? = ethnie1?-tortue-base] != nobody
   [
-    face one-of (turtles in-radius 4) with [ethnie1? = ethnie1?-tortue-base]
+    face one-of (turtles in-radius mobilite) with [ethnie1? = ethnie1?-tortue-base]
   ]
   ;même age et socio
-  one-of (turtles in-radius 4) with [vieux? = vieux?-tortue-base and CSP1? = CSP1?-tortue-base ] != nobody
+  one-of (turtles in-radius mobilite) with [ abs(age - age-tortue-base) < 25  and CSP1? = CSP1?-tortue-base ] != nobody
   [
-    face one-of (turtles in-radius 4) with [vieux? = vieux?-tortue-base and CSP1? = CSP1?-tortue-base ]
+    face one-of (turtles in-radius mobilite) with [ abs(age - age-tortue-base) < 25  and CSP1? = CSP1?-tortue-base ]
   ]
   ;même age
-  one-of (turtles in-radius 4) with [vieux? = vieux?-tortue-base] != nobody
+  one-of (turtles in-radius mobilite) with [ abs(age - age-tortue-base) < 25 ] != nobody
   [
-    face one-of (turtles in-radius 4) with [vieux? = vieux?-tortue-base]
+    face one-of (turtles in-radius mobilite) with [ abs(age - age-tortue-base) < 25 ]
   ]
   ;même socio
-  one-of (turtles in-radius 4) with [CSP1? = CSP1?-tortue-base ] != nobody
+  one-of (turtles in-radius mobilite) with [CSP1? = CSP1?-tortue-base ] != nobody
   [
-    face one-of (turtles in-radius 4) with [CSP1? = CSP1?-tortue-base ]
+    face one-of (turtles in-radius mobilite) with [CSP1? = CSP1?-tortue-base ]
   ])
 
 end
@@ -230,30 +247,15 @@ ticks
 30.0
 
 SLIDER
-29
-135
-208
-168
-nombre-individu-vieux
-nombre-individu-vieux
-0
-1000
-480.0
-10
-1
-NIL
-HORIZONTAL
-
-SLIDER
-29
-173
-209
-206
+20
+167
+200
+200
 nombre-individu-CSP1
 nombre-individu-CSP1
 0
 1000
-60.0
+530.0
 10
 1
 NIL
@@ -268,7 +270,7 @@ nombre-individu-ethnie1
 nombre-individu-ethnie1
 0
 1000
-900.0
+480.0
 10
 1
 NIL
@@ -476,7 +478,7 @@ force-confirmation
 force-confirmation
 0.01
 0.5
-0.39
+0.5
 0.01
 1
 NIL
@@ -490,8 +492,8 @@ SLIDER
 mobilite
 mobilite
 0
-4
-4.0
+5
+5.0
 1
 1
 NIL
@@ -521,7 +523,7 @@ SWITCH
 88
 bounce?
 bounce?
-0
+1
 1
 -1000
 
@@ -534,7 +536,7 @@ voteblanc
 voteblanc
 0
 100
-50.0
+52.0
 1
 1
 %
