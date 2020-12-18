@@ -1,5 +1,5 @@
 globals [
-  alea ;; variable permettant de définir un nombre entre 0 et 100
+  alea ;; variable permettant de définir un nombre aléatoire
   voteBleu ;; variable retennant le nombre de votes bleus au moment de l'élection
   voteRouge ;; variable retennant le nombre de votes rouges au moment de l'élection
   i ;; compteur
@@ -15,15 +15,16 @@ globals [
 
 turtles-own [
   ethnie1? ;; est-il de la ville ou de la campagne, si c'est vrai, il est de la campagne
-  age;;
+  age ;; age d'une tortue
   CSP1? ;; est-il cadre ou non, si c'est vrai, il est cadre
   opinion ;; quel est son opinion politique de 0 (bleu) à 100 (rouge)
-  a-deja-interagit;
+  a-deja-interagit ;; défini si l'agent peut changer d'opinion ou non à chaque tick
 
 ]
 
 to setup
   clear-all
+  clear-output
   set selected nobody
   set dark-blue 105
   set light-blue 97
@@ -35,32 +36,44 @@ to setup
   set i 0 ;; initialisation du compteur
   let j 0;; compte le nb de tortue ethnie 1
   create-turtles 1000
-  [ setxy random-xcor random-ycor ;; place les agents de manière aléatoire dans l'environnement
+  [
+    setxy random-xcor random-ycor ;; place les agents de manière aléatoire dans l'environnement
     set opinion random 101 ;; donne une opinion aléatoire entre 0 et 100
     set size 1
     set a-deja-interagit 0; évite qu'il y ait des doubles interactions dans convaincre-moi
+
     ;; donne la couleur en fonction de l'opinion
     ifelse opinion < 20 [set color dark-blue]
-    [ifelse opinion < 40  [set color light-blue]
-      [ifelse opinion < 60  [set color neutral-color]
-        [ifelse opinion < 80  [set color light-red] [set color dark-red]]]]
+       [ifelse opinion < 40  [set color light-blue]
+         [ifelse opinion < 60  [set color neutral-color]
+           [ifelse opinion < 80  [set color light-red] [set color dark-red]]]]
 
     set age (18 + random 53)
 
     ;;fait des combinaison des deux facteurs
-    (ifelse i < nombre-individu-CSP1
-    [set CSP1? true
-      (ifelse (remainder i 2 = 0 and j < nombre-individu-ethnie1)
-        [set ethnie1? true
-        set j j + 1]
-      [set ethnie1? false])
+    ifelse i < nombre-individu-CSP1
+    [
+      set CSP1? true
+      ifelse (remainder i 2 = 0 and j < nombre-individu-ethnie1)
+      [
+        set ethnie1? true
+        set j j + 1
+      ]
+      [
+        set ethnie1? false
+      ]
     ]
-    [set CSP1? false
-     ( ifelse j < nombre-individu-ethnie1
-        [set ethnie1? true
-          set j j + 1]
-        [set ethnie1? false])
-    ])
+    [
+      set CSP1? false
+      ifelse j < nombre-individu-ethnie1
+      [
+        set ethnie1? true
+        set j j + 1
+      ]
+      [
+        set ethnie1? false
+      ]
+    ]
 
     set i i + 1 ;; tour de compteur
   ]
@@ -69,6 +82,7 @@ to setup
   set selected subject
   ask selected [pen-down] ;; on demande a l'agent selectionné de dessiner sa trace de déplacement
   reset-ticks
+  tick ;;On fait un premier tick dans le vent pour éviter des problèmes de comptage
 end
 
 to go
@@ -82,22 +96,33 @@ to go
     fd random mobilite ;; avancer
     convaincre-moi ;; modification de l'opinion et actualisation de la couleur de la tortue en fonction
     ifelse opinion < 20 [set color dark-blue]
-    [ifelse opinion < 40 [set color light-blue]
-      [ifelse opinion < 60 [set color neutral-color]
-        [ifelse opinion < 80 [set color light-red] [set color dark-red]]]]
+       [ifelse opinion < 40 [set color light-blue]
+         [ifelse opinion < 60 [set color neutral-color]
+           [ifelse opinion < 80 [set color light-red] [set color dark-red]]]]
   ]
-  if ( ticks mod 100 = 0 ) [
-    set jour (jour + 1)
-    if jour = joursmax [
+  if ticks mod 100 = 0
+  [
+    set jour jour + 1
+    if jour = joursmax
+    [
       voter
-      stop]
+      stop
+    ]
   ]
+  if ticks mod 100 = 50
+  [
+     set alea random 5
+     ifelse alea = 0 [fn20]
+        [ifelse alea = 1 [fn40]
+           [ifelse alea = 2 [fn60]
+             [ifelse alea = 3 [fn80] [fn100] ] ] ]
+   ]
   tick
 end
 
 to changer-inspect ;; permet de changer d'agent à observer
   ask selected [pen-up]
-  ask selected [ stop-inspecting self ]
+  ask selected [stop-inspecting self]
   clear-drawing
   set selected min-one-of turtles [distancexy mouse-xcor mouse-ycor] ;; selectionne l'agent le plus proche du curseur de la souris
   watch selected
@@ -156,17 +181,19 @@ to convaincre-moi
     [
     ifelse
       ;on est pas d'accord, je confirme mon opinion
-    abs(opinion-tortue-base  - opinion) > seuil-confirmation
+      abs(opinion-tortue-base  - opinion) > seuil-confirmation
       ;;seuil-confirmation = combien de point d'opinion pour dire qu'on pense trop différement
       ;;force de confirmation == facteur pour savoir à quelle amplitude on change notre opinion
       [
       set opinion opinion - force-confirmation * (opinion-tortue-base  - opinion)
-      set opinion-tortue-base opinion-tortue-base - force-confirmation * (opinion - opinion-tortue-base)]
+      set opinion-tortue-base opinion-tortue-base - force-confirmation * (opinion - opinion-tortue-base)
+      ]
 
       ;on est d'accord, je vais vers un juste milieu
-    [
+      [
       set opinion opinion + force-confirmation * (opinion-tortue-base  - opinion)
-      set opinion-tortue-base  opinion-tortue-base  + force-confirmation * (opinion - opinion-tortue-base )]
+      set opinion-tortue-base  opinion-tortue-base  + force-confirmation * (opinion - opinion-tortue-base )
+      ]
     ]
 
 
@@ -190,33 +217,227 @@ end
 to voter
   set voteBleu 0
   set voteRouge 0
-  ask turtles[
+  ask turtles
+  [
     ifelse opinion < 40 [set voteBleu  (voteBleu + 1)]
-    [ifelse opinion < 50 [
-      if random 100 > voteblanc [set voteBleu (voteBleu + 1)]
-    ]
-    [ifelse opinion > 60 [set voteRouge (voteRouge + 1)]
-        [ if random 100 > voteblanc [set voteRouge (voteRouge + 1)]]]]
+      [ifelse opinion < 50 [if random 100 > voteblanc [set voteBleu (voteBleu + 1)]]
+        [ifelse opinion > 60 [set voteRouge (voteRouge + 1)]
+          [ if random 100 > voteblanc [set voteRouge (voteRouge + 1)]]]]
   ]
 end
 
-to murs ;; turtle procedure
-  ; figure out where the walls are on this side of the box
+to murs
+  ;; trouve ou sont les murs autour de la boite
   let box-edge-x max-pxcor
   let box-edge-y max-pycor
   if xcor >= 0
-    [ set box-edge-x max-pxcor
-      set box-edge-y max-pycor]
-  ; check: hitting left, right?
+  [
+      set box-edge-x max-pxcor
+      set box-edge-y max-pycor
+  ]
+  ; on regarde si on touche le mur droite ou gauche
   if (abs [pxcor] of patch-ahead 1 = box-edge-x) or
      (abs [pxcor] of patch-ahead 2 = box-edge-x)
-    ; if so, reflect heading around x axis
-    [ set heading (- heading) ]
-  ; check: hitting top or bottom wall?
+    ; si oui on renvoie dans l'axe x
+    [set heading (- heading)]
+  ; on regarde si on touche le mur du haut ou du bas
   if (abs [pycor] of patch-ahead 1 = box-edge-y) or
      (abs [pycor] of patch-ahead 2 = box-edge-y)
-    ; if so, reflect heading around y axis
-    [ set heading (180 - heading) ]
+    ; si oui on renvoie dans l'axe y
+    [set heading (180 - heading)]
+end
+
+to fn20 ;;Flash news 0-20
+  output-print "Flash News ! 0-20"
+  ask n-of nombre turtles
+  [
+    set alea random 21
+    ifelse (opinion < 21)
+    [
+      ifelse (opinion < 11)
+      [
+        let opinion-inter opinion + random 6
+        ifelse (opinion-inter > 10)
+        [
+          set opinion 10
+        ]
+        [
+          set opinion opinion-inter
+        ]
+      ]
+      [
+        let opinion-inter opinion - random 6
+        ifelse (opinion-inter < 11)
+        [
+          set opinion 10
+        ]
+        [
+          set opinion opinion-inter
+        ]
+      ]
+    ]
+    [
+      set opinion opinion - random 6
+    ]
+  ]
+end
+
+to fn40 ;;Flash news 20-40
+  output-print "Flash News ! 20-40"
+  ask n-of nombre turtles
+  [
+    set alea 20 + random 21
+    ifelse (opinion < 41 and opinion > 20)
+    [
+      ifelse (opinion < 31)
+      [
+        let opinion-inter opinion + random 6
+        ifelse (opinion-inter > 30)
+        [
+          set opinion 30
+        ]
+        [
+          set opinion opinion-inter
+        ]
+      ]
+      [
+        let opinion-inter opinion - random 6
+        ifelse (opinion-inter < 31)
+        [
+          set opinion 30
+        ]
+        [
+          set opinion opinion-inter
+        ]
+      ]
+    ]
+    [
+      ifelse (opinion < 21)
+      [
+        set opinion opinion + random 6
+      ]
+      [
+        set opinion opinion - random 6
+      ]
+    ]
+  ]
+end
+
+to fn60 ;;Flash news 40-60
+  output-print "Flash News ! 40-60"
+  ask n-of nombre turtles
+  [
+    set alea 40 + random 21
+    ifelse (opinion < 61)
+    [
+      ifelse (opinion < 51)
+      [
+        let opinion-inter opinion + random 6
+        ifelse (opinion-inter > 50)
+        [
+          set opinion 50
+        ]
+        [
+          set opinion opinion-inter
+        ]
+      ]
+      [
+        let opinion-inter opinion - random 6
+        ifelse (opinion-inter < 51)
+        [
+          set opinion 50
+        ]
+        [
+          set opinion opinion-inter
+        ]
+      ]
+    ]
+    [
+      ifelse (opinion < 41)
+      [
+        set opinion opinion + random 6
+      ]
+      [
+        set opinion opinion - random 6
+      ]
+    ]
+  ]
+end
+
+to fn80 ;;Flash news 60-80
+  output-print "Flash News ! 60-80"
+  ask n-of nombre turtles
+  [
+    set alea 60 + random 21
+    ifelse (opinion < 81 and opinion > 60)
+    [
+      ifelse (opinion < 71)
+      [
+        let opinion-inter opinion + random 6
+        ifelse (opinion-inter > 70)
+        [
+          set opinion 70
+        ]
+        [
+          set opinion opinion-inter
+        ]
+      ]
+      [
+        let opinion-inter opinion - random 6
+        ifelse (opinion-inter < 71)
+        [
+          set opinion 70
+        ]
+        [
+          set opinion opinion-inter
+        ]
+      ]
+    ]
+    [
+      ifelse (opinion < 81)
+      [
+        set opinion opinion + random 6
+      ]
+      [
+        set opinion opinion - random 6
+      ]
+    ]
+  ]
+end
+
+to fn100 ;;Flash news 80-100
+  output-print "Flash News ! 80-100"
+  ask n-of nombre turtles
+  [
+    set alea 80 + random 21
+    ifelse (opinion < 101)
+    [
+      ifelse (opinion < 91)
+      [
+        let opinion-inter opinion + random 6
+        ifelse (opinion-inter > 90)
+        [
+          set opinion 90
+        ]
+        [
+          set opinion opinion-inter
+        ]
+      ]
+      [
+        let opinion-inter opinion - random 6
+        ifelse (opinion-inter < 91)
+        [
+          set opinion 90
+        ]
+        [
+          set opinion opinion-inter
+        ]
+      ]
+    ]
+    [
+      set opinion opinion + random 6
+    ]
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -335,10 +556,10 @@ PENS
 BUTTON
 346
 505
-500
+444
 538
-Flash news bleu foncé
-ask n-of nombre turtles \n[\nset alea random 21\nifelse (opinion < 21) \n   [\n   ifelse (opinion < 11)\n      [ \n      let opinion-inter opinion + random 6\n      ifelse (opinion-inter > 10) \n         [\n         set opinion 10\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n      [\n      let opinion-inter opinion - random 6\n      ifelse (opinion-inter < 11) \n         [\n         set opinion 10\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n   ]\n   [\n   set opinion opinion - random 6\n   ]\n]
+Flash news 0-20
+fn20
 NIL
 1
 T
@@ -350,10 +571,10 @@ NIL
 1
 
 SLIDER
-554
-559
-772
-592
+473
+550
+691
+583
 nombre
 nombre
 10
@@ -365,12 +586,12 @@ personnes influencées
 HORIZONTAL
 
 BUTTON
-346
-541
-497
-574
-Flash news bleu claire
-ask n-of nombre turtles \n[\nset alea 20 + random 21\nifelse (opinion < 41 and opinion > 20) \n   [\n   ifelse (opinion < 31)\n      [ \n      let opinion-inter opinion + random 6\n      ifelse (opinion-inter > 30) \n         [\n         set opinion 30\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n      [\n      let opinion-inter opinion - random 6\n      ifelse (opinion-inter < 31) \n         [\n         set opinion 30\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n   ]\n   [\n   ifelse (opinion < 21)\n      [\n      set opinion opinion + random 6\n      ]\n      [\n      set opinion opinion - random 6\n      ]\n   ]\n]
+446
+505
+544
+538
+Flash news 20-40
+fn40
 NIL
 1
 T
@@ -382,12 +603,12 @@ NIL
 1
 
 BUTTON
-642
-506
-775
-539
-Flash news neutre
-ask n-of nombre turtles \n[\nset alea 40 + random 21\nifelse (opinion < 61) \n   [\n   ifelse (opinion < 51)\n      [ \n      let opinion-inter opinion + random 6\n      ifelse (opinion-inter > 50) \n         [\n         set opinion 50\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n      [\n      let opinion-inter opinion - random 6\n      ifelse (opinion-inter < 51) \n         [\n         set opinion 50\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n   ]\n   [\n   ifelse (opinion < 41)\n      [\n      set opinion opinion + random 6\n      ]\n      [\n      set opinion opinion - random 6\n      ]\n   ]\n]
+545
+505
+637
+538
+Flash news 40-60
+fn60
 NIL
 1
 T
@@ -399,12 +620,12 @@ NIL
 1
 
 BUTTON
-346
-577
-500
-610
-Flash news rouge clair
-ask n-of nombre turtles \n[\nset alea 60 + random 21\nifelse (opinion < 81 and opinion > 60) \n   [\n   ifelse (opinion < 71)\n      [ \n      let opinion-inter opinion + random 6\n      ifelse (opinion-inter > 70) \n         [\n         set opinion 70\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n      [\n      let opinion-inter opinion - random 6\n      ifelse (opinion-inter < 71) \n         [\n         set opinion 70\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n   ]\n   [\n   ifelse (opinion < 81)\n      [\n      set opinion opinion + random 6\n      ]\n      [\n      set opinion opinion - random 6\n      ]\n   ]\n]
+638
+505
+731
+538
+Flash news 60-80
+fn80
 NIL
 1
 T
@@ -416,12 +637,12 @@ NIL
 1
 
 BUTTON
-346
-614
-509
-647
-Flash news rouge foncé
-ask n-of nombre turtles \n[\nset alea 80 + random 21\nifelse (opinion < 101) \n   [\n   ifelse (opinion < 91)\n      [ \n      let opinion-inter opinion + random 6\n      ifelse (opinion-inter > 90) \n         [\n         set opinion 90\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n      [\n      let opinion-inter opinion - random 6\n      ifelse (opinion-inter < 91) \n         [\n         set opinion 90\n         ]\n         [\n         set opinion opinion-inter\n         ]\n      ]\n   ]\n   [\n   set opinion opinion + random 6\n   ]\n]
+732
+505
+834
+538
+Flash news 80-100
+fn100
 NIL
 1
 T
@@ -523,7 +744,7 @@ SWITCH
 88
 bounce?
 bounce?
-1
+0
 1
 -1000
 
@@ -549,9 +770,9 @@ SLIDER
 293
 joursmax
 joursmax
-0
+1
 100
-10.0
+1.0
 1
 1
 jours avant vote
@@ -566,6 +787,13 @@ NIL
 jour
 17
 1
+11
+
+OUTPUT
+849
+453
+1089
+634
 11
 
 @#$#@#$#@
