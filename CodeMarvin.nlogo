@@ -93,7 +93,7 @@ to go
   [
     chercher-personne-similaire
     if bounce? = true [murs]
-    fd random mobilite ;; avancer
+    fd random (mobilite + 1) ;; avancer
     convaincre-moi ;; modification de l'opinion et actualisation de la couleur de la tortue en fonction
     ifelse opinion < 20 [set color dark-blue]
        [ifelse opinion < 40 [set color light-blue]
@@ -713,8 +713,8 @@ SLIDER
 mobilite
 mobilite
 0
-5
-5.0
+4
+4.0
 1
 1
 NIL
@@ -772,7 +772,7 @@ joursmax
 joursmax
 1
 100
-1.0
+9.0
 1
 1
 jours avant vote
